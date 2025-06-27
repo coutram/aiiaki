@@ -1,6 +1,32 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function App() {
+  // Password protection state
+  const PASSWORD = 'letmein'
+  const STORAGE_KEY = 'aiiaki_authenticated'
+  const [isAuthed, setIsAuthed] = useState(false)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem(STORAGE_KEY) === 'true') {
+        setIsAuthed(true)
+      }
+    }
+  }, [])
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault()
+    if (passwordInput === PASSWORD) {
+      localStorage.setItem(STORAGE_KEY, 'true')
+      setIsAuthed(true)
+      setError('')
+    } else {
+      setError('Incorrect password. Please try again.')
+    }
+  }
+
   // State for Podcast-Archive filters
   const [podcastFilter, setPodcastFilter] = useState('All')
   // State for Learning tag filters
@@ -22,6 +48,28 @@ function App() {
   // Filtered data
   const filteredPodcasts = podcastFilter === 'All' ? podcastArchive : podcastArchive.filter(p => p.type === podcastFilter)
   const filteredLearning = learningTag === 'All' ? learningResources : learningResources.filter(l => l.tags.includes(learningTag))
+
+  // Password modal
+  if (!isAuthed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-yellow-50 to-pink-50">
+        <form onSubmit={handlePasswordSubmit} className="bg-white/90 rounded-2xl shadow-xl p-8 flex flex-col items-center max-w-xs w-full">
+          <div className="text-2xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">Protected</div>
+          <div className="mb-2 text-gray-700 text-center">Enter password to access this site</div>
+          <input
+            type="password"
+            className="border rounded px-3 py-2 mb-3 w-full focus:ring-2 focus:ring-orange-400 text-center"
+            placeholder="Password"
+            value={passwordInput}
+            onChange={e => setPasswordInput(e.target.value)}
+            autoFocus
+          />
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+          <button type="submit" className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-2 rounded-full font-medium shadow hover:from-orange-600 hover:to-pink-600 transition-all w-full">Enter</button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-50 via-yellow-50 to-pink-50">
